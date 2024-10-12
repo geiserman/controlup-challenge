@@ -1,0 +1,64 @@
+name: Manual executor
+
+on:
+  workflow_call:
+    inputs:
+      test_parameters:
+        description: Test script to run the cron job with
+        required: true
+        type: string
+      node_version:
+        description: Node version to use
+        required: true
+        default: 20.x
+        type: string
+    secrets:
+      ORG_AUTH_TOKEN:
+        description: GH Auth token
+        required: true
+      GCP_WIP:
+        required: true
+
+jobs:
+  checkout-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v4
+
+      - name: Update NPMRC with Github Token
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+
+      - name: Set CACHE_KEY env var
+        run: echo "CACHE_KEY=${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}"  >> $GITHUB_ENV
+
+      - name: Install dependencies
+        uses: actions/setup-node@v4
+        with:
+          node_version: ${{ inputs.node_version }}
+          working_dir: '.'
+          node_modules_path: 'node_modules'
+          node_modules_cache_key: ${{ env.CACHE_KEY }}
+
+      - name: Run tests
+        run: |
+          npm run ${{ inputs.test_command }} --passWithNoTests
+        shell: bash
+        working-directory: ${{ inputs.working_dir }}
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          junit_files: reports/production/production-test-results-report.xml
+
+      - name: Archive Test Results
+        if: "always()"
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ github.sha }}
+          path: results
+
+    outputs:
+      CACHE_KEY: ${{ env.CACHE_KEY }}
+      status: ${{ job.status }}
