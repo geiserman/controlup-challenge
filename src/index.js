@@ -34,4 +34,4 @@ process.on('uncaughtException', async (error) => {
     }
 });
 
-logger.info(`Starting ${serviceName} to run on ${environment} environment`);
+logger.info(`Starting ${serviceName} in ${environment} environment`);

@@ -8,12 +8,7 @@ configVars:
   NODE_ENV: 'development'
   API_MAIN_URL: 'https://api.test.com'
   API_VERSION: '/v4'
-  API_ENDPOINT:
-    ENDPOINT1: '/endpoint1'
-    ENDPOINT2: '/endpoint2'
-    ENDPOINT3: '/endpoint3'
-    ENDPOINT4: '/endpoint4'
-  PLATFORM_MAIN_URL: 'https://api.test.io'
+  API_HOST: 'tripadvisor16.p.rapidapi.com'
   SESSIONS_FILENAME: 'usersSessionsProd.json'
   TEST_RUN_RETRIES: 1
   REPORT_PATH: 'reports/development'

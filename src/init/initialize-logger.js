@@ -17,8 +17,6 @@ const initializeLogger = () => {
     });
 };
 
-// internal getLogger function is used in whole project, the external one is used only in this file
-// the implementation details could vary from time to time
 function getLoggerInternal() {
     initializeLogger();
 
