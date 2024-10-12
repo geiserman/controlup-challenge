@@ -1,14 +1,14 @@
 {
   "name": "controlup-challenge",
-  "version": "1.0.4",
+  "version": "1.0.3",
   "description": "",
   "main": "./src/index.js",
   "scripts": {
     "lint": "eslint ./",
     "lint:fix": "eslint ./ --fix",
     "publish:alpha": "git commit --allow-empty -m \"chore(): alpha\" && git push",
-    "test": "NODE_ENV='production' REPORT_NAME='test-results-production' TEST_MARK=@PROGRESSION@ node run-test-with-retries.js",
-    "test-unit": "NODE_ENV='development' REPORT_NAME='test-results-production' TEST_MARK=@UNIT@ node run-test-with-retries.js"
+    "test": "NODE_ENV='production' REPORT_NAME='test-results' TEST_MARK=@PROGRESSION@ node run-test-with-retries.js",
+    "test-unit": "NODE_ENV='production' REPORT_NAME='test-results' TEST_MARK=@UNIT@ node run-test-with-retries.js"
   },
   "repository": {
     "type": "git",

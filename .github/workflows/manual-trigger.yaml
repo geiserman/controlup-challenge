@@ -1,0 +1,32 @@
+name: Manual trigger
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_command:
+        description: Specific script to run (from package.json)
+        required: true
+        default: test
+        type: choice
+        options:
+          - lint
+          - test
+          - test:unit
+      node_version:
+        description: Specific node version to run on
+        required: true
+        type: choice
+        default: 20.x
+        options:
+          - 20.x
+          - 18.x
+          - 16.x
+
+jobs:
+  trigger-tests-executor:
+    name: Trigger tests executor
+    uses: ./.github/workflows/manual-executor.yaml
+    with:
+      test_command: ${{ github.event.inputs.test_command }}
+      node_version: ${{ github.event.inputs.node_version }}
+    secrets: inherit
