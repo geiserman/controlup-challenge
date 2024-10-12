@@ -3,7 +3,7 @@ name: Manual executor
 on:
   workflow_call:
     inputs:
-      test_parameters:
+      test_command:
         description: Test script to run the cron job with
         required: true
         type: string

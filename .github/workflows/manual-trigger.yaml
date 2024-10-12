@@ -27,6 +27,6 @@ jobs:
     name: Trigger tests executor
     uses: ./.github/workflows/manual-executor.yaml
     with:
-      test_command: ${{ github.event.inputs.test_parameters }}
+      test_command: ${{ github.event.inputs.test_command }}
       node_version: ${{ github.event.inputs.node_version }}
     secrets: inherit
