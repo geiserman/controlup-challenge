@@ -1,9 +1,4 @@
-const {
-    get: pure_get,
-    post: pure_post,
-    del: pure_del,
-    put: pure_put,
-} = require('@geiserman/restful-client');
+const { get: pureGet } = require('@geiserman/restful-client');
 
 const tripAdvisorAutHeaders = {
     'x-rapidapi-key': process.env.API_KEY,
@@ -16,14 +11,12 @@ async function get({ url, queryParams, customHeaders }) {
     }
 
     if (queryParams) {
-        // check if queryParams is an object
         if (typeof queryParams !== 'object') {
             throw new Error('queryParams must be an object');
         }
     }
 
     if (customHeaders) {
-        // check if customHeaders is an object
         if (typeof customHeaders !== 'object') {
             throw new Error('customHeaders must be an object');
         }
@@ -38,7 +31,7 @@ async function get({ url, queryParams, customHeaders }) {
         tmpCustomHeaders = tripAdvisorAutHeaders;
     }
 
-    return pure_get({
+    return pureGet({
         url,
         queryParams,
         customHeaders: tmpCustomHeaders,
