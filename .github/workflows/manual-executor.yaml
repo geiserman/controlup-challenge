@@ -35,7 +35,7 @@ jobs:
         run: |
           npm run ${{ inputs.test_command }} --passWithNoTests
         shell: bash
-        working-directory: '.''
+        working-directory: '.'
 
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
