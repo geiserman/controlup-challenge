@@ -3,7 +3,7 @@ name: Manual executor
 on:
   workflow_call:
     inputs:
-      test_parameters:
+      test_command:
         description: Test script to run the cron job with
         required: true
         type: string
@@ -12,12 +12,6 @@ on:
         required: true
         default: 20.x
         type: string
-    secrets:
-      ORG_AUTH_TOKEN:
-        description: GH Auth token
-        required: true
-      GCP_WIP:
-        required: true
 
 jobs:
   checkout-and-test:
@@ -35,16 +29,14 @@ jobs:
       - name: Install dependencies
         uses: actions/setup-node@v4
         with:
-          node_version: ${{ inputs.node_version }}
-          working_dir: '.'
-          node_modules_path: 'node_modules'
-          node_modules_cache_key: ${{ env.CACHE_KEY }}
+          node-version: ${{ inputs.node_version }}
+          registry-url: https://registry.npmjs.org/
 
       - name: Run tests
         run: |
           npm run ${{ inputs.test_command }} --passWithNoTests
         shell: bash
-        working-directory: ${{ inputs.working_dir }}
+        working-directory: '.'
 
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
