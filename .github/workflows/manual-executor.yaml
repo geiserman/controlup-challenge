@@ -55,13 +55,6 @@ jobs:
         with:
           path: artifacts
 
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: |
-            reports/production/production-test-results-report.xml
-
     outputs:
       CACHE_KEY: ${{ env.CACHE_KEY }}
       status: ${{ job.status }}
