@@ -12,12 +12,6 @@ on:
         required: true
         default: 20.x
         type: string
-    secrets:
-      ORG_AUTH_TOKEN:
-        description: GH Auth token
-        required: true
-      GCP_WIP:
-        required: true
 
 jobs:
   checkout-and-test:
