@@ -30,15 +30,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node_version: ${{ inputs.node_version }}
-          working_dir: '.'
-          node_modules_path: 'node_modules'
-          node_modules_cache_key: ${{ env.CACHE_KEY }}
 
       - name: Run tests
         run: |
           npm run ${{ inputs.test_command }} --passWithNoTests
         shell: bash
-        working-directory: ${{ inputs.working_dir }}
+        working-directory: '.''
 
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
