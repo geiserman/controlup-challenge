@@ -41,18 +41,19 @@ jobs:
         shell: bash
         working-directory: '.'
 
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          junit_files: reports/production/production-test-results-report.xml
-
-      - name: Archive Test Results
+      - name: Upload Test Results
         if: "always()"
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ github.sha }}
-          path: results
+          name: Test-results-${{ github.sha }}
+          path: |
+            reports/production/production-test-results-report.xml
+            reports/production/production-test-results-report.html
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
 
     outputs:
       CACHE_KEY: ${{ env.CACHE_KEY }}
