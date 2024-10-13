@@ -1,27 +1,29 @@
-const environment = process.env.NODE_ENV;
+const environment = process.env.NODE_ENV || 'development';
 
-/* eslint-disable import/order */
 require('jest-extended');
 
-const { getLogger } = require('./src/init/initialize-logger');
-
-const { name: serviceName } = require('./package.json');
 const { initializeConfiguration } = require('@geiserman/yaml-config-to-env');
-const { initializeLogger } = require('./src/init/initialize-logger');
+const { name: serviceName } = require('./package.json');
+const { initializeLogger, getLogger } = require('./src/init/initialize-logger');
 
-let logger = getLogger();
+jest.setTimeout(20000);
 
-jest.setTimeout(400000);
-initialize();
-// setGlobals();
+async function initialize() {
+    try {
+        initializeConfiguration({ environment });
+
+        initializeLogger({ serviceName });
+
+        const logger = getLogger();
+
+        logger.debug('Initialization complete');
+    } catch (error) {
+        console.error('Initialization failed:', error);
+
+        throw error;
+    }
+}
 
 beforeAll(async () => {
-    logger.debug('beforeall');
+    await initialize();
 });
-
-function initialize() {
-    // Initialize prerequisites
-    initializeConfiguration({ environment });
-    initializeLogger({ serviceName });
-    logger = getLogger();
-}
