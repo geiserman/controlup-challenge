@@ -9,6 +9,7 @@ module.exports = {
         '<rootDir>/src/test/*.test.js',
         '<rootDir>/src/*.test.js',
         '<rootDir>/src/**/**/**/*.test.js',
+        '<rootDir>/tests/**/*.test.js',
     ],
     reporters: ['default'],
 };
