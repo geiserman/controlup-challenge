@@ -1,95 +1,102 @@
-// run_tests_with_retries.js
 const { runCLI } = require('@jest/core');
 const { initializeConfiguration } = require('@geiserman/yaml-config-to-env');
 const { getLogger } = require('@geiserman/js-logger');
 const MyCustomReporter = require('jest-html-reporters');
-const path = require('path');
 const JestJUnit = require('jest-junit');
+const path = require('path');
 const { getDateAndTime } = require('./src/helpers/date-time-helpers');
 const { initializeLogger } = require('./src/init/initialize-logger');
 const { mergeTestResults } = require('./src/helpers/test-run-helpers/merge-results');
 
-const environment = process.env.NODE_ENV ? process.env.NODE_ENV : 'test';
-
-initializeConfiguration({ environment });
-
-initializeLogger();
-
-const logger = global.__LOGGER__ || getLogger();
-
-global.__LOGGER__ = logger;
-
+const environment = process.env.NODE_ENV || 'test';
 const NUM_RETRIES = process.env.TEST_RUN_RETRIES || 3;
 
-// eslint-disable-next-line consistent-return
+initializeConfiguration({ environment });
+initializeLogger();
+
+const logger = getLogger();
+
+async function generateReport(results, globalConfig) {
+    const reporter = new MyCustomReporter(globalConfig, {
+        publicPath: process.env.REPORT_PATH,
+        filename: `${environment}-${process.env.REPORT_NAME}-report.html`,
+        pageTitle: `${environment.toUpperCase()} ${process.env.REPORT_NAME} ${getDateAndTime()}`,
+    });
+
+    await reporter.onRunComplete(null, results);
+
+    const junit = new JestJUnit(globalConfig, {
+        outputDirectory: `./${process.env.REPORT_PATH}`,
+        outputName: `${environment}-${process.env.REPORT_NAME}-report.xml`,
+    });
+
+    junit.onRunComplete(null, results);
+}
+
 async function runTestsAndRetry({ jestConfig, retriesRemaining, mergedResults }) {
     try {
-        let retries = retriesRemaining;
+        logger.debug(`Running tests. Retries remaining: ${retriesRemaining}`);
+
         const tmpJestConfig = { ...jestConfig };
-        const { results, globalConfig } = await runCLI(tmpJestConfig, tmpJestConfig.projects);
+        const cliResponse = await runCLI(tmpJestConfig, tmpJestConfig.projects);
+
+        const results = cliResponse?.results;
+        const globalConfig = cliResponse?.globalConfig;
+
+        if (!results) {
+            logger.error('runCLI did not return any results');
+
+            throw new Error('No test results returned from runCLI');
+        }
 
         const tmpMergedResults = mergeTestResults({
             oldResults: mergedResults,
             newResults: results,
         });
 
-        const reporter = new MyCustomReporter(globalConfig, {
-            publicPath: process.env.REPORT_PATH,
-            filename: `${process.env.NODE_ENV.toLowerCase()}-${
-                process.env.REPORT_NAME
-            }-report.html`,
-            pageTitle: `${process.env.NODE_ENV.toUpperCase()} ${
-                process.env.REPORT_NAME
-            } ${getDateAndTime()}`,
-        });
+        await generateReport(tmpMergedResults, globalConfig);
 
-        await reporter.onRunComplete(null, tmpMergedResults);
-
-        const junit = new JestJUnit(globalConfig, {
-            outputDirectory: `./${process.env.REPORT_PATH}`,
-            outputName: `${process.env.NODE_ENV.toLowerCase()}-${
-                process.env.REPORT_NAME
-            }-report.xml`,
-        });
-
-        junit.onRunComplete(null, tmpMergedResults);
-
-        // If there were no failures or we're out of retries, return
         if (!results.numFailedTests && !results.numFailedTestSuites) {
+            logger.info('All tests passed successfully.');
+
             return Promise.resolve();
         }
 
-        if (retriesRemaining === 1) {
+        if (retriesRemaining <= 1) {
+            logger.error('Out of retries. Some tests are still failing.');
+
             return Promise.reject(new Error('Out of retries. Some tests are still failing.'));
         }
 
-        // Compile a list of the test suites that failed and tell Jest to only run those files next time
-        tmpJestConfig.testMatch = results.testResults
+        const failedTestFiles = results.testResults
             .filter((testResult) => testResult.numFailingTests > 0 || testResult.failureMessage)
             .map((testResult) => testResult.testFilePath);
 
-        // Decrement retries remaining and retry
-        retries -= 1;
+        const updatedJestConfig = {
+            ...jestConfig,
+            testMatch: failedTestFiles,
+        };
 
-        logger.debug(`Retrying failed tests. ${retriesRemaining} attempts remaining.`);
+        logger.info(
+            `Retrying failed tests (${failedTestFiles.length} files). ${
+                retriesRemaining - 1
+            } retries left.`,
+        );
 
         return runTestsAndRetry({
-            jestConfig: tmpJestConfig,
-            retriesRemaining: retries,
+            jestConfig: updatedJestConfig,
+            retriesRemaining: retriesRemaining - 1,
             mergedResults: tmpMergedResults,
         });
-    } catch (e) {
-        logger.error('Error: ', e);
+    } catch (error) {
+        logger.error('Error during test run:', error);
 
-        throw new Error(e);
+        throw error;
     }
 }
 
 (async () => {
-    logger.debug('runTestsAndRetry()');
-
     const rootDir = path.join(__dirname);
-
     const jestOptions = {
         verbose: true,
         config: `${rootDir}/jest.config.js`,
@@ -98,6 +105,7 @@ async function runTestsAndRetry({ jestConfig, retriesRemaining, mergedResults })
         testNamePattern: process.env.TEST_MARK,
     };
 
+    logger.debug('Starting test suite with retries');
     await runTestsAndRetry({
         jestConfig: jestOptions,
         retriesRemaining: NUM_RETRIES,
