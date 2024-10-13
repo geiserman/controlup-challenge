@@ -7,7 +7,7 @@
     "lint": "eslint ./",
     "lint:fix": "eslint ./ --fix",
     "publish:alpha": "git commit --allow-empty -m \"chore(): alpha\" && git push",
-    "test": "NODE_ENV='production' REPORT_NAME='test-results' TEST_MARK=@PROGRESSION@ node run-test-with-retries.js",
+    "test": "NODE_ENV='production' REPORT_NAME='test-results' TEST_MARK=@PROGRESSION@ node run-test-with-retries.js"
   },
   "repository": {
     "type": "git",
